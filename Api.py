@@ -1,7 +1,13 @@
 from flask import Flask, request, jsonify,render_template
 import os
 import pickle
+import pandas as pd 
 from sklearn.metrics import mean_absolute_error as MAE
+import json
+from flask_wtf import FlaskForm
+from wtforms import FileField, SubmitField
+from werkzeug.utils import secure_filename
+import sqlite3
 
 
 
@@ -9,11 +15,18 @@ os.chdir(os.path.dirname(__file__))
 
 app = Flask(__name__)
 app.config['DEBUG'] = True
+app.config["SECRET_KEY"] = "supersecretkey"
+app.config["UPLOAD_FOlDER"]="data"
 
 @app.route("/", methods=['GET'])
 def hello():
 
     return render_template("index.html")
+
+@app.route("/v1", methods=['GET'])
+def datos_predion():
+
+    return render_template("predict.html")
 
 
 @app.route("/monitorizar", methods=['GET'])
@@ -65,6 +78,42 @@ def predict():
     prediction = model.predict([[potential,finishing,short_passing,volleys,dribbling,long_passing,ball_control,reactions,
                                 shot_power,long_shots,interceptions,positioning,vision,standing_tackle,sliding_tackle]])
     return render_template('predict.html', predict='La predicción es :  {}'.format(prediction))
+
+
+
+class UploadFileForm(FlaskForm):
+    file = FileField("File")
+    submit = SubmitField("Upload File")
+
+
+@app.route('/ingest_data', methods=['GET',"POST"])
+def new_data():
+    form = UploadFileForm()
+    if form.validate_on_submit():
+        # First grab the file
+        file = form.file.data 
+        # Save the file
+        file.save(os.path.join(os.path.abspath(os.path.dirname(__file__)),app.config['UPLOAD_FOLDER'],secure_filename(file.filename))) # Then save the file
+
+        # Open file
+        with open('static/files/x_prueba.json','r') as f:
+            data = json.loads(f.read())
+        # Flatten data
+        new_data_df = pd.json_normalize(data, record_path =['partidos'])
+
+        sql = sqlite3.connect('data/players.db')
+        cursor = sql.cursor()
+
+        lista_valores = new_data_df.values.tolist()
+        cursor.executemany("INSERT INTO players VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", lista_valores)
+
+        sql.commit()
+        sql.close()
+
+        return "File has been uploaded."
+
+    return render_template('ingest.html', form=form)
+
 
 
 app.run()

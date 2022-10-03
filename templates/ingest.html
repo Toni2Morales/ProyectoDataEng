@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Ingest</title>
+        <link rel="stylesheet" type="text/css" href="/static/predit.css"/>
+    </head>
+
+    <body>
+
+        <div class="top">
+            <img src="../static/78461920504cf3431636959492.png" alt="">
+            <h3>Ingestar Json</h3>
+            <p>Introduce los datos.  
+			</p>
+        </div>
+
+        <div class="form">
+            <form method="POST" enctype="multipart/form-data">
+                {{form.hidden_tag()}}
+                {{form.file()}}
+                {{form.submit()}}
+            </form>
+        </div>
+        
+    </body>
+</html>
