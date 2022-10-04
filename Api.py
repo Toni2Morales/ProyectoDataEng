@@ -103,7 +103,7 @@ def reentrenar():
     jason= pd.read_json("score1.json")
     SCORE1 = jason.iloc[0][0]
     SCORE2 = MAE(Y, modelo.predict(X))
-    SiNo = ""
+    SiNo = "Reentrenando modelo"
     if SCORE2 < SCORE1:
         SiNo = "El modelo ha sido reentrenado y "
         with open("model", "wb") as g:
