@@ -3,7 +3,7 @@ import os
 import pickle
 import pandas as pd 
 from sklearn.metrics import mean_absolute_error as MAE
-import pymysql
+#import pymysql
 import pandas as pd
 from os import environ
 # os.chdir(os.path.dirname(__file__))
