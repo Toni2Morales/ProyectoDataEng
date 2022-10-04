@@ -64,28 +64,27 @@ def new_data():
         cursor = sql.cursor()
 
         lista_valores = new_data_df.values.tolist()
-        cursor.executemany("INSERT INTO players VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", lista_valores)
-        
+        instruccion = "INSERT INTO players VALUES {uno}, {dos}, {tres}, {cuatro}".format(uno = tuple(lista_valores[0]), dos = tuple(lista_valores[1]), tres = tuple(lista_valores[2]), cuatro = tuple(lista_valores[3]))
+        cursor.execute(instruccion)
         sql.commit()
         sql.close()
-
         return redirect("/monitorizar")
 
     return render_template('ingest.html', form=form)
 
-@app.route("/monitorizar", methods=['POST'])
+@app.route("/monitorizar", methods=['GET'])
 def monitorizar():
-    data2 = pd.read_json("static/files/dato2")
+    data2 = pd.read_json("static/files/dato2.json")
     with open("model", "rb") as f:
         modelo = pickle.load(f)
     x2 = data2.drop(columns = "overall_rating")
     y2 = data2["overall_rating"]
     score2 = MAE(y2, modelo.predict(x2))
-    jason= pd.read_json("ProyectoDataEng/score1.json")
+    jason= pd.read_json("score1.json")
     score1 = jason.iloc[0][0]
     resultado = ""
     if score1 < score2:
-        resultado =  reentrenar()
+        resultado =  redirect(reentrenar())
     return str(resultado + "la monitorización fue realizada")
 
 @app.route("/reentrenar", methods=['GET'])
@@ -105,7 +104,7 @@ def reentrenar():
     with open("model", "rb") as f:
         modelo = pickle.load(f)
     modelo.fit(X, Y)
-    jason= pd.read_json("ProyectoDataEng/score1.json")
+    jason= pd.read_json("score1.json")
     SCORE1 = jason.iloc[0][0]
     SCORE2 = MAE(Y, modelo.predict(X))
     SiNo = ""
