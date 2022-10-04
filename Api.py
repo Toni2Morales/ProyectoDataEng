@@ -89,14 +89,10 @@ def monitorizar():
 
 @app.route("/reentrenar", methods=['GET'])
 def reentrenar():
-    usuario = "admin"
-    contrasena = "789123456"
-    host = "dataeng.clev5oqi6ti6.us-east-2.rds.amazonaws.com"
-    conexion = pymysql.connect(user = usuario, password=contrasena, host = host, cursorclass = pymysql.cursors.DictCursor)
-    RDS = conexion.cursor()
-    RDS.execute("use players_database")
-    RDS.execute("select * from players_table")
-    DataTotal = pd.DataFrame(RDS.fetchall(), columns = ['potential', 'finishing', 'short_passing', 'volleys', 'dribbling',
+
+    sql = sqlite3.connect('players.db')
+    cursor = sql.cursor()
+    DataTotal = pd.DataFrame(cursor.execute("select * from players").fetchall(), columns = ['potential', 'finishing', 'short_passing', 'volleys', 'dribbling',
     'long_passing', 'ball_control', 'reactions', 'shot_power', 'long_shots','interceptions', 'positioning', 'vision', 'standing_tackle',
     'sliding_tackle', 'overall_rating'])
     X = DataTotal.drop(columns = "overall_rating")
