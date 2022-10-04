@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, jsonify, redirect
 import os
 import pickle
 import pandas as pd 
@@ -21,7 +21,7 @@ os.chdir(os.path.dirname(__file__))
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "supersecretkey"
-app.config["UPLOAD_FOlDER"]="data"
+app.config["UPLOAD_FOlDER"]="static/files"
 
 @app.route("/", methods=['GET'])
 def hello():
@@ -49,25 +49,47 @@ def new_data():
         # Open file
         with open(os.path.join(os.path.abspath(os.path.dirname(__file__)))+"/static/files/"+file.filename,'r') as f:
             data = json.loads(f.read())
-        # Flatten data
-        new_data_df = pd.json_normalize(data)
 
-        sql = sqlite3.connect('data/players.db')
+        # Flatten data
+        # usuario = "admin"
+        # contrasena = "789123456"
+        # host = "dataeng.clev5oqi6ti6.us-east-2.rds.amazonaws.com"
+        # conexion = pymysql.connect(user = usuario, password=contrasena, host = host, cursorclass = pymysql.cursors.DictCursor)
+        # RDS = conexion.cursor()
+        # RDS.execute("use players_database")
+        # RDS.execute("select * from players_table")
+
+        new_data_df = pd.json_normalize(data)
+        sql = sqlite3.connect('players.db')
         cursor = sql.cursor()
 
         lista_valores = new_data_df.values.tolist()
-        cursor.executemany("INSERT INTO players VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", lista_valores)
-
+        cursor.executemany("INSERT INTO players VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", lista_valores)
+        
         sql.commit()
         sql.close()
 
-        return ("Los datos de archivo insertado se ha ingestado en base de datos ")
-
+        return redirect("/monitorizar")
 
     return render_template('ingest.html', form=form)
 
 @app.route("/monitorizar", methods=['POST'])
-def monitorizar(data2):
+def monitorizar():
+    data2 = pd.read_json("static/files/dato2")
+    with open("model", "rb") as f:
+        modelo = pickle.load(f)
+    x2 = data2.drop(columns = "overall_rating")
+    y2 = data2["overall_rating"]
+    score2 = MAE(y2, modelo.predict(x2))
+    jason= pd.read_json("ProyectoDataEng/score1.json")
+    score1 = jason.iloc[0][0]
+    resultado = ""
+    if score1 < score2:
+        resultado =  reentrenar()
+    return str(resultado + "la monitorización fue realizada")
+
+@app.route("/reentrenar", methods=['GET'])
+def reentrenar():
     usuario = "admin"
     contrasena = "789123456"
     host = "dataeng.clev5oqi6ti6.us-east-2.rds.amazonaws.com"
@@ -75,34 +97,17 @@ def monitorizar(data2):
     RDS = conexion.cursor()
     RDS.execute("use players_database")
     RDS.execute("select * from players_table")
-    data1 = pd.DataFrame(RDS.fetchall(), columns = ['potential', 'finishing', 'short_passing', 'volleys', 'dribbling',
+    DataTotal = pd.DataFrame(RDS.fetchall(), columns = ['potential', 'finishing', 'short_passing', 'volleys', 'dribbling',
     'long_passing', 'ball_control', 'reactions', 'shot_power', 'long_shots','interceptions', 'positioning', 'vision', 'standing_tackle',
     'sliding_tackle', 'overall_rating'])
-    data2 = pd.DataFrame(request.get_json(), columns = ['potential', 'finishing', 'short_passing', 'volleys', 'dribbling',
-    'long_passing', 'ball_control', 'reactions', 'shot_power', 'long_shots','interceptions', 'positioning', 'vision', 'standing_tackle',
-    'sliding_tackle', 'overall_rating']).astype("int")
-    x = data1.drop(columns = "overall_rating")
-    y = data1["overall_rating"]
+    X = DataTotal.drop(columns = "overall_rating")
+    Y = DataTotal["overall_rating"]
     with open("model", "rb") as f:
         modelo = pickle.load(f)
-    score1 = MAE(y, modelo.predict(x))
-    x2 = data2.drop(columns = "overall_rating")
-    y2 = data2["overall_rating"]
-    score2 = MAE(y2, modelo.predict(x2))
-    result = ""
-    if score1 < score2:
-        result =  reentrenar(x, y, x2, y2)
-    return str(" la monitorización fue realizada")
-
-@app.route("/reentrenar", methods=['GET'])
-def reentrenar(X,Y, X2, Y2):
-    with open("model", "rb") as f:
-        modelo = pickle.load(f)
-    SCORE1 = MAE(Y2, modelo.predict(X2))
-    x3 = pd.concat([X, X2], ignore_index=True)
-    y3 = pd.concat([Y, Y2], ignore_index=True)
-    modelo.fit(x3, y3)
-    SCORE2 = MAE(Y2, modelo.predict(X2))
+    modelo.fit(X, Y)
+    jason= pd.read_json("ProyectoDataEng/score1.json")
+    SCORE1 = jason.iloc[0][0]
+    SCORE2 = MAE(Y, modelo.predict(X))
     SiNo = ""
     if SCORE2 < SCORE1:
         SiNo = "El modelo ha sido reentrenado y "
@@ -113,7 +118,7 @@ def reentrenar(X,Y, X2, Y2):
 @app.route('/predict', methods=['GET'])
 
 def predict():
-    model = pickle.load(open('data/model','rb'))
+    model = pickle.load(open('model','rb'))
 
     potential = float(request.args.get('potential', None))
     finishing = float(request.args.get('finishing', None))
