@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Predict</title>
+        <link rel="stylesheet" type="text/css" href="/static/predit.css"/>
+    </head>
+    <body>
+        
+        <div class="top">
+            <img src="../static/78461920504cf3431636959492.png" alt="">
+            <h3>Predict</h3>
+            <p>Introduce los datos solicitados para la prediccion.  
+			</p>
+        </div>
+        <div class="form">
+
+            <form method="get" action="/predict" autocomplete="on" >
+                <label>Potential</label><br/>
+                <input type="text" name="potential" /><br/>
+                <label>Finishing</label><br/>
+                <input type="text" name="finishing" /><br/>
+                <label>Short_passing</label><br/>
+                <input type="text" name="short_passing" /><br/>
+                <label>Volleys</label><br/>
+                <input type="text" name="volleys" /><br/>
+                <label>Dribbling</label><br/>
+                <input type="text" name="dribbling" /><br/>
+                <label>Long_passing</label><br/>
+                <input type="text" name="long_passing" /><br/>
+                <label>Ball_control</label><br/>
+                <input type="text" name="ball_control" /><br/>
+                <label>Reactions</label><br/>
+                <input type="text" name="reactions" /><br/>
+                <label>Shot_power</label><br/>
+                <input type="text" name="shot_power" /><br/>
+                <label>Long_shots</label><br/>
+                <input type="text" name="long_shots" /><br/>
+                <label>Interceptions</label><br/>
+                <input type="text" name="interceptions" /><br/>
+                <label>Positioning</label><br/>
+                <input type="text" name="positioning" /><br/>
+                <label>Vision</label><br/>
+                <input type="text" name="vision" /><br/>
+                <label>Standing_tackle</label><br/>
+                <input type="text" name="standing_tackle" /><br/>
+                <label>Sliding_tackle</label><br/>
+                <input type="text" name="sliding_tackle" /><br/>
+
+                <button type="submit" class="btn btn-primary btn-block btn-large" >Predecir</button>
+            </form>
+
+        </div>
+
+        <div class="box">
+
+            <div> {{predict}} </div>
+            <a href="/v1">Go Back</a>
+
+        </div>
+
+        
+        
+        
+    </body>
+</html>
