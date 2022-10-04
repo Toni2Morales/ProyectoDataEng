@@ -139,7 +139,7 @@ def predict():
 @app.route("/ultimo_registro", methods=['GET'])
 
 def ultimo_registro():
-    connection = sqlite3.connect('data/players.db')
+    connection = sqlite3.connect('players.db')
     cursor = connection.cursor()
     select_datos = "SELECT * FROM players"
     result = cursor.execute(select_datos).fetchall() 
