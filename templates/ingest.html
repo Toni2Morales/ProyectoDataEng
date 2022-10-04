@@ -3,7 +3,7 @@
     <head>
         <meta charset="UTF-8">
         <title>Ingest</title>
-        <link rel="stylesheet" type="text/css" href="/static/predit.css"/>
+        <link rel="stylesheet" type="text/css" href="/static/ingest.css"/>
     </head>
 
     <body>
@@ -15,13 +15,17 @@
 			</p>
         </div>
 
-        <div class="form">
+        <div class = "forms">
+
             <form method="POST" enctype="multipart/form-data">
                 {{form.hidden_tag()}}
                 {{form.file()}}
                 {{form.submit()}}
             </form>
+
+
         </div>
+        
         
     </body>
 </html>

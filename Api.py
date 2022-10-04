@@ -7,6 +7,7 @@ import json
 from flask_wtf import FlaskForm
 from wtforms import FileField, SubmitField
 from werkzeug.utils import secure_filename
+from wtforms.validators import InputRequired
 import sqlite3
 
 
@@ -80,26 +81,35 @@ def predict():
     return render_template('predict.html', predict='La predicción es :  {}'.format(prediction))
 
 
+@app.route("/ultimo_registro", methods=['GET'])
+
+def ultimo_registro():
+    connection = sqlite3.connect('data/players.db')
+    cursor = connection.cursor()
+    select_datos = "SELECT * FROM players"
+    result = cursor.execute(select_datos).fetchall() 
+    connection.close()
+    return jsonify(result[-10:]) 
+
 
 class UploadFileForm(FlaskForm):
-    file = FileField("File")
+    file = FileField("File",validators=[InputRequired()])
     submit = SubmitField("Upload File")
 
-
-@app.route('/ingest_data', methods=['GET',"POST"])
+@app.route('/ingest', methods=['GET',"POST"])
 def new_data():
     form = UploadFileForm()
     if form.validate_on_submit():
         # First grab the file
         file = form.file.data 
         # Save the file
-        file.save(os.path.join(os.path.abspath(os.path.dirname(__file__)),app.config['UPLOAD_FOLDER'],secure_filename(file.filename))) # Then save the file
+        file.save(os.path.join(os.path.abspath(os.path.dirname(__file__)),app.config['UPLOAD_FOlDER'],secure_filename(file.filename))) # Then save the file
 
         # Open file
-        with open('static/files/x_prueba.json','r') as f:
+        with open(os.path.join(os.path.abspath(os.path.dirname(__file__)))+"/static/files/"+file.filename,'r') as f:
             data = json.loads(f.read())
         # Flatten data
-        new_data_df = pd.json_normalize(data, record_path =['partidos'])
+        new_data_df = pd.json_normalize(data)
 
         sql = sqlite3.connect('data/players.db')
         cursor = sql.cursor()
@@ -110,10 +120,10 @@ def new_data():
         sql.commit()
         sql.close()
 
-        return "File has been uploaded."
+        return ("Los datos de archivo insertado se ha ingestado en base de datos ")
+
 
     return render_template('ingest.html', form=form)
-
 
 
 app.run()

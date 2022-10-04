@@ -5,6 +5,7 @@
 body{
 	font-size: 16px;
 	background: #7da69d;
+	
 }
 
 .top{
@@ -26,22 +27,24 @@ body{
 	font-family:'Times New Roman';
 }
 
-.form {
+.forms {
     display: flex;
     align-content: center;
     flex-direction: row;
     width: 100%;
-    height: 100%;
+    height:100%;
     flex-wrap: wrap;
-	margin-left: 45%;
-    margin-right: 45%;
-    margin-top: 1%;
+	margin-left: 37%;
+    margin-right: 50%;
+    margin-top: 3%;
+	
 }
 
 .form input {
 	height:15px;
-	width:150px;
+	width:200px;
 	font-size:12px;
+	align-content: center;
 }
 
 .box{
